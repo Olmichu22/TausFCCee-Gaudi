@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(podio)
+find_dependency(EDM4HEP)
+
+include("${CMAKE_CURRENT_LIST_DIR}/TauToolTargets.cmake")

@@ -1,0 +1,31 @@
+options:
+  exposePODMembers: False
+  getSyntax: True
+schema_version: 1
+
+datatypes:
+  tautool::GenTauCandidate:
+    Description: "Generator-level tau classification: visible decay topology, kinematics and truth-level provenance."
+    Author: "Olmo Arquero"
+    Members:
+      - int32_t decayMode{-999}                // Visible-topology ID (-999 = not defined)
+      - int32_t trueMode{-999}                 // Canonical mode code, see genDecayModes.MODE_TABLE (-999 = not defined)
+      - int32_t charge [e]                     // Tau charge
+      - int32_t originPDG                      // PDG of the first non-tau ancestor (23=Z, 22=gamma*)
+      - edm4hep::Vector3d genMomentum [GeV]    // Full momentum
+      - double genMass [GeV]                   // Full mass
+      - edm4hep::Vector3d visMomentum [GeV]    // Visible momentum
+      - double visMass [GeV]                   // Visible mass
+      - float maxConeAngle [rad]               // Max angle between visible components
+      - float helicity{-2.0f}                  // Tau helicity (-2.0 = not computed)
+    VectorMembers:
+      - int32_t constituentOrigin              // Same order as `constituents`
+    OneToOneRelations:
+      - edm4hep::MCParticle tau                // Generator tau
+      - edm4hep::MCParticle motherTau          // Only set if secondary (tau -> gamma -> tau tau)
+      - edm4hep::MCParticle radiativePhoton    // Only set if secondary
+    OneToManyRelations:
+      - edm4hep::MCParticle constituents       // Final visible components of the tau
+      - edm4hep::MCParticle neutrinos          // Neutrinos from the tau decay
+      - edm4hep::MCParticle extraNeutrals      // Subset of constituents
+      - edm4hep::MCParticle fsrPhotons         // Subset of constituents
