@@ -31,11 +31,9 @@ add_test(NAME HelloWorldAlg
 add_test(NAME GenTauClassifier
          WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
          COMMAND k4run k4TauAnalysis/options/runGenTauClassifier.py)
-add_executable(testIsFinalTau testIsFinalTau.cpp)
-target_link_libraries(testIsFinalTau PRIVATE TauClassification)
-add_test(NAME IsFinalTau COMMAND testIsFinalTau)
-# For LD_LIBRARY_PATH
-# ${PROJECT_BINARY_DIR}                                         # The files <plugins>.components and <plugins>.confdb are here
+
+         # For LD_LIBRARY_PATH
+         # ${PROJECT_BINARY_DIR}                                         # The files <plugins>.components and <plugins>.confdb are here
 # ${PROJECT_BINARY_DIR}/${PROJECT_NAME}                         # The plugins (.so) are here
 # ${CMAKE_CURRENT_BINARY_DIR}                                   # The tests (.so) are here if there are algorithms in the tests
 # ${CMAKE_CURRENT_BINARY_DIR}/genConfDir/${CURRENT_DIR_NAME}    # The files <test>.components and <test>.confdb are here
@@ -74,6 +72,14 @@ ${CMAKE_CURRENT_BINARY_DIR}/genConfDir:\
 $ENV{PYTHONPATH};\
 "
 )
+add_executable(testIsFinalTau testIsFinalTau.cpp)
+target_link_libraries(testIsFinalTau PRIVATE TauClassification)
+add_test(NAME IsFinalTau COMMAND testIsFinalTau)
+
+
+add_executable(testGetDecayProducts testGetDecayProducts.cpp)
+target_link_libraries(testGetDecayProducts PRIVATE TauClassification)
+add_test(NAME GetDecayProducts COMMAND testGetDecayProducts)
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 set_tests_properties(${test_names} PROPERTIES ENVIRONMENT "${test_environment}")
 
