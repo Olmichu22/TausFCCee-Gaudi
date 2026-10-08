@@ -19,8 +19,7 @@ void collectDecayProducts(const edm4hep::MCParticle& p, std::vector<edm4hep::MCP
   // Rule 2: status 1 or no daughters -> leaf
   const int status = p.getGeneratorStatus();
   if (status == 1 || p.getDaughters().empty()) {
-    const bool isNeutrino = absPdg == 12 || absPdg == 14 || absPdg == 16;
-    if (!(isNeutrino && excludeNeutrinos)) {
+    if (!(isNeutrino(p) && excludeNeutrinos)) {
       out.push_back(p);
     }
     return;
@@ -43,6 +42,11 @@ std::vector<edm4hep::MCParticle> getDecayProducts(const edm4hep::MCParticle& p, 
   std::vector<edm4hep::MCParticle> decayProducts;
   detail::collectDecayProducts(p, decayProducts, excludeNeutrinos);
   return decayProducts;
+}
+
+bool isNeutrino(const edm4hep::MCParticle& p){
+  const int absPdg = std::abs(p.getPDG());
+  return (absPdg == 12 || absPdg == 14 || absPdg == 16);
 }
 
 } // namespace tautool::gen

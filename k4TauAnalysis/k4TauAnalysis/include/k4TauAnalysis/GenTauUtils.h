@@ -3,6 +3,8 @@
 #include <vector>
 
 namespace tautool::gen {
+/// Returns true if `p` is a neutrino or antineutrino (|PDG| 12, 14 or 16).
+bool isNeutrino(const edm4hep::MCParticle& p);
 
 /// Returns true if `p` is a tau (|PDG| == 15) with generatorStatus == 2,
 /// i.e. the last copy before it decays. Same criterion as findAllGenTaus.
@@ -39,5 +41,4 @@ namespace tautool::gen::detail {
 /// @param out              Accumulator; results are appended, never cleared
 /// @param excludeNeutrinos Drop neutrinos from the result
 void collectDecayProducts(const edm4hep::MCParticle& p, std::vector<edm4hep::MCParticle>& out, bool excludeNeutrinos);
-
 } // namespace tautool::gen::detail

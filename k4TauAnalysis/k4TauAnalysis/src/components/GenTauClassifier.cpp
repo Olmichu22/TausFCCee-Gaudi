@@ -23,9 +23,7 @@ struct GenTauClassifier final
         cand.setCharge(static_cast<int32_t>(p.getCharge()));
         auto decayProducts = tautool::gen::getDecayProducts(p, false);
         for (const auto& prod : decayProducts) {
-          const int absPdg = std::abs(prod.getPDG());
-          const bool isNeutrino = (absPdg == 12 || absPdg == 14 || absPdg == 16);
-          if (isNeutrino) {
+          if (tautool::gen::isNeutrino(prod)) {
             cand.addToNeutrinos(prod);
           } else {
             cand.addToConstituents(prod);
