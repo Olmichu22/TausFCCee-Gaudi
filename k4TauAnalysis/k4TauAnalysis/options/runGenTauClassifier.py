@@ -1,4 +1,4 @@
-from Gaudi.Configuration import INFO
+from Gaudi.Configuration import INFO, DEBUG
 from Configurables import GenTauClassifier
 from k4FWCore import ApplicationMgr, IOSvc
 
@@ -8,7 +8,8 @@ io.Output = "gentaus.root"
 
 alg = GenTauClassifier("GenTauClassifier",
                        InputCollection="MCParticles",
-                       OutputCollection="GenTauCandidates")
+                       OutputCollection="GenTauCandidates",
+                       OutputLevel=DEBUG)
 
 ApplicationMgr(TopAlg=[alg], EvtSel="NONE", EvtMax=10,
                ExtSvc=[io], OutputLevel=INFO)
