@@ -60,7 +60,6 @@ int main() {
     link(tau, pi);
     link(tau, nu);
 
-
     const auto result = tautool::gen::getDecayProducts(tau, excludeNeutrinos);
     if (result.size() != 2 || !(contains(result, pi) && contains(result, nu))) {
       ++failures;
@@ -77,7 +76,7 @@ int main() {
     auto gamma2 = make(coll, 22, 1);
     auto nu = make(coll, 16, 1);
     bool excludeNeutrinos = true;
-    
+
     link(tau, pi0);
     link(tau, pi);
     link(pi0, gamma1);
@@ -138,7 +137,7 @@ int main() {
     auto tau = make(coll, 15, 2);
     auto e = make(coll, 11, 2);
     auto nue = make(coll, -12, 2);
-    auto nutau =make(coll, 16, 2);
+    auto nutau = make(coll, 16, 2);
     bool excludeNeutrinos = true;
 
     link(tau, nue);

@@ -1,6 +1,6 @@
 #pragma once
-#include <vector>
 #include "edm4hep/MCParticle.h"
+#include <vector>
 
 namespace tautool::gen {
 
@@ -17,8 +17,7 @@ bool isFinalTau(const edm4hep::MCParticle& p);
 /// @param p                Root of the decay tree (typically a status-2 tau)
 /// @param excludeNeutrinos Drop neutrinos (|PDG| 12, 14, 16) from the result
 /// @return Leaves of the tree, in depth-first order
-std::vector<edm4hep::MCParticle> getDecayProducts(const edm4hep::MCParticle& p,
-                                                  bool excludeNeutrinos = true);
+std::vector<edm4hep::MCParticle> getDecayProducts(const edm4hep::MCParticle& p, bool excludeNeutrinos = true);
 } // namespace tautool::gen
 
 namespace tautool::gen::detail {
@@ -39,8 +38,6 @@ namespace tautool::gen::detail {
 /// @param p                Particle to expand
 /// @param out              Accumulator; results are appended, never cleared
 /// @param excludeNeutrinos Drop neutrinos from the result
-void collectDecayProducts(const edm4hep::MCParticle& p,
-                          std::vector<edm4hep::MCParticle>& out,
-                          bool excludeNeutrinos);
+void collectDecayProducts(const edm4hep::MCParticle& p, std::vector<edm4hep::MCParticle>& out, bool excludeNeutrinos);
 
 } // namespace tautool::gen::detail

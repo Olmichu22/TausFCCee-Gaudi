@@ -1,5 +1,5 @@
-#include "k4TauAnalysis/GenTauUtils.h"
 #include "edm4hep/MCParticleCollection.h"
+#include "k4TauAnalysis/GenTauUtils.h"
 
 #include <iostream>
 
@@ -28,7 +28,7 @@ int main() {
   auto pion1 = coll.create();
   pion1.setPDG(211);
   pion1.setGeneratorStatus(1);
-  if (tautool::gen::isFinalTau(pion1)){
+  if (tautool::gen::isFinalTau(pion1)) {
     ++failures;
     std::cerr << "Case 3 failed: non-tau particle\n";
   }
@@ -36,7 +36,7 @@ int main() {
   auto pion2 = coll.create();
   pion2.setPDG(211);
   pion2.setGeneratorStatus(2);
-  if (tautool::gen::isFinalTau(pion2)){
+  if (tautool::gen::isFinalTau(pion2)) {
     ++failures;
     std::cerr << "Case 4 failed: non-tau particle with gen status 2\n";
   }
