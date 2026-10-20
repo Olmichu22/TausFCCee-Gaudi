@@ -1,6 +1,5 @@
-#include "k4TauAnalysis/GenTauUtils.h"
-
 #include "Math/Vector4D.h"
+#include "k4TauAnalysis/KinematicUtils.h"
 
 #include <cmath>
 #include <iostream>
@@ -28,7 +27,7 @@ bool check(const char* name, double got, double expected) {
 
 int main() {
   int failures = 0;
-  using tautool::gen::deltaRThetaPhi;
+  using tautool::kin::deltaRThetaPhi;
   constexpr double pi = std::numbers::pi;
 
   // Case 1: identical vectors -> 0

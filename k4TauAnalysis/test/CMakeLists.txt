@@ -76,13 +76,12 @@ add_executable(testIsFinalTau testIsFinalTau.cpp)
 target_link_libraries(testIsFinalTau PRIVATE TauClassification)
 add_test(NAME IsFinalTau COMMAND testIsFinalTau)
 
+add_executable(testDeltaRThetaPhi testDeltaRThetaPhi.cpp)
+target_link_libraries(testDeltaRThetaPhi PRIVATE TauClassification)
+add_test(NAME DeltaRThetaPhi COMMAND testDeltaRThetaPhi)
 
 add_executable(testGetDecayProducts testGetDecayProducts.cpp)
 target_link_libraries(testGetDecayProducts PRIVATE TauClassification)
 add_test(NAME GetDecayProducts COMMAND testGetDecayProducts)
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 set_tests_properties(${test_names} PROPERTIES ENVIRONMENT "${test_environment}")
-
-add_executable(testDeltaRThetaPhi testDeltaRThetaPhi.cpp)
-target_link_libraries(testDeltaRThetaPhi PRIVATE TauClassification)
-add_test(NAME DeltaRThetaPhi COMMAND testDeltaRThetaPhi)

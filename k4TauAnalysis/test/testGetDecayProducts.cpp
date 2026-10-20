@@ -150,5 +150,23 @@ int main() {
       std::cerr << "Case 6 failed: expected {e}, got " << result.size() << " particles\n";
     }
   }
+  // Case 7: tau+ -> pi+ anti-nu_tau, excludeNeutrinos = true -> {pi}
+  //   (antineutrinos have negative PDG: checks that |PDG| is used)
+  {
+    edm4hep::MCParticleCollection coll;
+    auto tau = make(coll, -15, 2);
+    auto pi = make(coll, 211, 1);
+    auto nubar = make(coll, -16, 1);
+    bool excludeNeutrinos = true;
+
+    link(tau, pi);
+    link(tau, nubar);
+
+    const auto result = tautool::gen::getDecayProducts(tau, excludeNeutrinos);
+    if (result.size() != 1 || !contains(result, pi)) {
+      ++failures;
+      std::cerr << "Case 7 failed: expected {pi}, got " << result.size() << " particles\n";
+    }
+  }
   return failures;
 }

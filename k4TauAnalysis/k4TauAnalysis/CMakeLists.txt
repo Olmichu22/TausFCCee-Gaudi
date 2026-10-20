@@ -19,7 +19,7 @@ limitations under the License.
 
 file(GLOB _plugin_sources src/components/*.cpp)
 
-add_library(TauClassification SHARED src/GenTauUtils.cpp)
+add_library(TauClassification SHARED src/GenTauUtils.cpp src/KinematicUtils.cpp)
 
 find_package(ROOT REQUIRED COMPONENTS GenVector)   
 target_link_libraries(TauClassification PUBLIC EDM4HEP::edm4hep ROOT::GenVector)
@@ -29,7 +29,6 @@ target_include_directories(TauClassification PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_link_libraries(TauClassification PUBLIC EDM4HEP::edm4hep)
 
 gaudi_add_module(k4TauAnalysisPlugins
                  SOURCES ${_plugin_sources}

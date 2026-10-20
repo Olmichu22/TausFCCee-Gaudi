@@ -1,16 +1,47 @@
 #include "k4TauAnalysis/GenTauUtils.h"
 #include <cstdlib>
+#include <algorithm>
+#include <array>
 #include <cmath>
+namespace {
+// |PDG| codes counted as prongs by the decay-mode ID (pi+-, K+-, K*+-).
+// Edit this list to change what counts as a prong.
+constexpr std::array kProngPdgs{211, 321, 323};
+
+bool isProng(int pdg) {
+  return std::ranges::find(kProngPdgs, std::abs(pdg)) != kProngPdgs.end();
+}
+
+} // namespace
 namespace tautool::gen {
 
-double deltaRThetaPhi(const ROOT::Math::PxPyPzMVector& p4a, const ROOT::Math::PxPyPzMVector& p4b){
-  constexpr double pi = std::numbers::pi;
-  const double dtheta = p4a.Theta() - p4b.Theta();
-  double dphi = p4a.Phi() - p4b.Phi();
-  if (dphi > pi) dphi -=2 * pi;
-  if (dphi < -pi) dphi +=2 * pi;
-  
-  return std::hypot(dtheta, dphi);
+int32_t visibleDecayMode(const std::vector<edm4hep::MCParticle>& constituents){
+  int countMuon = 0;
+  int countElectron = 0;
+  int countPions = 0;
+  int countPi0 = 0;
+  int countOther = 0;
+  double totalCharge = 0.;
+
+  for (const auto& dau : constituents){
+    const auto absPdg = std::abs(dau.getPDG());
+    const auto charge = dau.getCharge();
+    if (absPdg==13) ++countMuon;
+    else if (absPdg==11) ++countElectron;
+    else if (isProng(absPdg)) ++countPions;
+    else if (absPdg==111) ++countPi0;
+    else if (charge!=0) ++countOther;
+    totalCharge+=charge;
+  }
+
+  const long visCharge = std::lround(totalCharge);
+  if (countMuon > 0) return decaymode::kMuonic;
+  if (countElectron > 0) return decaymode::kElectronic;
+  if (countOther > 0) return decaymode::kUnexpected;
+  if (std::abs(visCharge) == 1 && countPions == 1) return countPi0;
+  if (std::abs(visCharge) == 1 && countPions == 3) return decaymode::kThreeProngOffset + countPi0;
+
+  return decaymode::kInvalid;
 }
 
 bool isFinalTau(const edm4hep::MCParticle& p) { return std::abs(p.getPDG()) == 15 && p.getGeneratorStatus() == 2; }
@@ -54,7 +85,7 @@ std::vector<edm4hep::MCParticle> getDecayProducts(const edm4hep::MCParticle& p, 
   return decayProducts;
 }
 
-bool isNeutrino(const edm4hep::MCParticle& p){
+bool isNeutrino(const edm4hep::MCParticle& p) {
   const int absPdg = std::abs(p.getPDG());
   return (absPdg == 12 || absPdg == 14 || absPdg == 16);
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "Math/Vector4D.h"
 
-namespace tautool::kin{
+namespace tautool::kin {
 /// Distance between two directions in the (theta, phi) plane:
 /// sqrt(dtheta^2 + dphi^2), with dphi wrapped to [-pi, pi].
 /// Port of myutils.dRAngle. Note: theta, not pseudorapidity.
