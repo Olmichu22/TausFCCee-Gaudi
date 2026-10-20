@@ -1,8 +1,12 @@
 #pragma once
 #include "edm4hep/MCParticle.h"
 #include <vector>
+#include "Math/Vector4D.h"
 
 namespace tautool::gen {
+/// Returns the (theta, phi) distance of two 4D Vectors
+double deltaRThetaPhi(const ROOT::Math::PxPyPzMVector& p4a, const ROOT::Math::PxPyPzMVector& p4b);
+
 /// Returns true if `p` is a neutrino or antineutrino (|PDG| 12, 14 or 16).
 bool isNeutrino(const edm4hep::MCParticle& p);
 

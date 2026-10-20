@@ -21,6 +21,9 @@ file(GLOB _plugin_sources src/components/*.cpp)
 
 add_library(TauClassification SHARED src/GenTauUtils.cpp)
 
+find_package(ROOT REQUIRED COMPONENTS GenVector)   
+target_link_libraries(TauClassification PUBLIC EDM4HEP::edm4hep ROOT::GenVector)
+
 target_include_directories(TauClassification PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>

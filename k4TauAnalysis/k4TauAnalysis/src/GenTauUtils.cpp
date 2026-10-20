@@ -1,7 +1,17 @@
 #include "k4TauAnalysis/GenTauUtils.h"
 #include <cstdlib>
-
+#include <cmath>
 namespace tautool::gen {
+
+double deltaRThetaPhi(const ROOT::Math::PxPyPzMVector& p4a, const ROOT::Math::PxPyPzMVector& p4b){
+  constexpr double pi = std::numbers::pi;
+  const double dtheta = p4a.Theta() - p4b.Theta();
+  double dphi = p4a.Phi() - p4b.Phi();
+  if (dphi > pi) dphi -=2 * pi;
+  if (dphi < -pi) dphi +=2 * pi;
+  
+  return std::hypot(dtheta, dphi);
+}
 
 bool isFinalTau(const edm4hep::MCParticle& p) { return std::abs(p.getPDG()) == 15 && p.getGeneratorStatus() == 2; }
 } // namespace tautool::gen
