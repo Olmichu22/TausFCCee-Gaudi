@@ -1,7 +1,7 @@
 #pragma once
 #include "edm4hep/MCParticle.h"
 #include <vector>
-
+#include <cstdint>
 namespace tautool::gen {
 /// Returns the visible-topology decay mode of a tau from its constituents.
 /// Port of the ID logic in tauReco.visTauGen.
