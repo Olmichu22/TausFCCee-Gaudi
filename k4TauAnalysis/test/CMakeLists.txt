@@ -72,6 +72,10 @@ ${CMAKE_CURRENT_BINARY_DIR}/genConfDir:\
 $ENV{PYTHONPATH};\
 "
 )
+add_executable(testVisibleDecayMode testVisibleDecayMode.cpp)
+target_link_libraries(testVisibleDecayMode PRIVATE TauClassification)
+add_test(NAME VisibleDecayMode COMMAND testVisibleDecayMode)
+
 add_executable(testIsFinalTau testIsFinalTau.cpp)
 target_link_libraries(testIsFinalTau PRIVATE TauClassification)
 add_test(NAME IsFinalTau COMMAND testIsFinalTau)

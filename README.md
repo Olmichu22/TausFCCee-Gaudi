@@ -14,8 +14,13 @@ The repository holds two independent CMake projects:
 
 Inside `k4TauAnalysis/`:
 
-- `TauClassification`: shared library without Gaudi dependencies (`GenTauUtils.h`, namespace
-  `tautool::gen`) with the generator-level helpers: `isFinalTau`, `isNeutrino`, `getDecayProducts`.
+- `TauClassification`: shared library without Gaudi dependencies, with the helpers used by the
+  algorithms:
+  - `GenTauUtils.h` (namespace `tautool::gen`): generator-level logic — `isFinalTau`,
+    `isNeutrino`, `getDecayProducts`, `visibleDecayMode` and the decay-mode codes in
+    `tautool::gen::decaymode`.
+  - `KinematicUtils.h` (namespace `tautool::kin`): `deltaRThetaPhi`, the (theta, phi) distance
+    used for cone sizes and matching.
 - `k4TauAnalysisPlugins`: Gaudi plugin with `GenTauClassifier`, a `k4FWCore::Transformer` that
   turns `MCParticles` into a `GenTauCandidateCollection`.
 - `options/runGenTauClassifier.py`: steering file.
@@ -23,48 +28,30 @@ Inside `k4TauAnalysis/`:
 
 ## Status
 
-`GenTauClassifier` currently fills the tau, its charge, its visible constituents (pi0 kept
-unexpanded) and its neutrinos. Validated against the Python implementation on 10 events.
-Kinematics, decay-mode ID and tau provenance are still to be ported.
+`GenTauClassifier` fills, for every final generator-level tau: the tau itself, its charge, its
+visible constituents (pi0 kept unexpanded) and neutrinos, its full and visible kinematics
+(`genMomentum`, `genMass`, `visMomentum`, `visMass`, `maxConeAngle`) and its visible decay mode.
+Still to be ported: true decay mode, extra neutrals, photon origins and tau provenance.
 
-## Building
-
-Set up the environment (pinned key4hep release):
-
-```bash
-source setupKey4Hep.sh
-```
-
-Build and install the datamodel first:
+## Building and running
 
 ```bash
-cd TauTool
-cmake -B build -G Ninja -DCMAKE_INSTALL_PREFIX=install
-ninja -C build install
-```
-
-Then the algorithms, pointing CMake to the installed datamodel:
-
-```bash
-cd ../k4TauAnalysis
-cmake -B build -G Ninja -DCMAKE_INSTALL_PREFIX=install \
-      -DCMAKE_PREFIX_PATH=$PWD/../TauTool/install
-ninja -C build install
-```
-
-## Running
-
-```bash
+./build.sh          # configure (first time), build and install both projects, run the tests
+source env.sh       # runtime environment, once per shell
 cd k4TauAnalysis
-k4_local_repo
-export LD_LIBRARY_PATH=$PWD/../TauTool/install/lib64:$LD_LIBRARY_PATH
 k4run k4TauAnalysis/options/runGenTauClassifier.py
 ```
 
-`k4_local_repo` puts the local install first in the environment, so remember to run
-`ninja install` after every change to the plugin. The `LD_LIBRARY_PATH` export is only needed
-for `podio-dump` and PyROOT to find the `TauTool` dictionary; the plugin finds `libTauTool.so`
-through its RPATH.
+`build.sh` uses the pinned key4hep release from `setupKey4Hep.sh` and only configures a project
+if its `build/` directory does not exist yet. `env.sh` must be sourced, not executed: it runs
+`k4_local_repo` and adds the `TauTool` dictionary to `LD_LIBRARY_PATH` (needed by `podio-dump`
+and PyROOT; the plugin itself finds `libTauTool.so` through its RPATH).
+
+The input file defaults to the CIEMAT storage. Override it with:
+
+```bash
+export TAU_INPUT=/path/to/events_edm4hep.root
+```
 
 Inspect the output:
 
@@ -75,12 +62,11 @@ podio-dump -e 0 -d gentaus.root
 ## Tests
 
 ```bash
-cd k4TauAnalysis/build
-ctest --output-on-failure
+ctest --test-dir k4TauAnalysis/build --output-on-failure
 ```
 
-The `GenTauClassifier` test reads an input file on the CIEMAT storage, so it only runs where
-that path is accessible.
+`build.sh` already runs them. The `GenTauClassifier` integration test needs an accessible input
+file (see `TAU_INPUT` above).
 
 ## Code style
 
