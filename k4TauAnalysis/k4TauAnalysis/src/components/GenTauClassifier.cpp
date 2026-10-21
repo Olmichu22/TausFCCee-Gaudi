@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <string>
+#include <vector>
 
 struct GenTauClassifier final
     : k4FWCore::Transformer<tautool::GenTauCandidateCollection(const edm4hep::MCParticleCollection&)> {
@@ -28,17 +29,18 @@ struct GenTauClassifier final
         cand.setGenMomentum(p.getMomentum());
         cand.setGenMass(p.getMass());
 
-        auto decayProducts = tautool::gen::getDecayProducts(p, false);
+        const auto decayProducts = tautool::gen::getDecayProducts(p, false);
 
         const auto tauP4 = edm4hep::utils::p4(p, edm4hep::utils::UseMass);
         ROOT::Math::PxPyPzMVector visP4{}; // starts at (0,0,0,0)
         double maxDR = 0.0;
-
+        std::vector<edm4hep::MCParticle> comps{};
         // Const filling process
         for (const auto& prod : decayProducts) {
           if (tautool::gen::isNeutrino(prod)) {
             cand.addToNeutrinos(prod);
           } else {
+            comps.push_back(prod);
             cand.addToConstituents(prod);
             const auto prodP4 = edm4hep::utils::p4(prod, edm4hep::utils::UseMass);
             visP4 += prodP4;
@@ -49,12 +51,14 @@ struct GenTauClassifier final
           }
         }
 
+
+        const int32_t decayMode = tautool::gen::visibleDecayMode(comps);
         const auto visP = edm4hep::Vector3d{visP4.Px(), visP4.Py(), visP4.Pz()};
+        
+        cand.setDecayMode(decayMode);
         cand.setVisMomentum(visP);
         cand.setVisMass(visP4.M());
         cand.setMaxConeAngle(static_cast<float>(maxDR));
-        
-
         
         if (msgLevel(MSG::DEBUG)) {
           debug() << "Tau " << p.getObjectID().index << " : " << cand.getConstituents().size() << " constituents, "
@@ -63,7 +67,7 @@ struct GenTauClassifier final
             debug() << " " << c.getPDG();
           }
           debug() << ". genMass " << cand.getGenMass() << ", visMass " << cand.getVisMass() << ", maxConeAngle "
-                  << cand.getMaxConeAngle();
+                  << cand.getMaxConeAngle() << ", decayMode " << cand.getDecayMode();
 
           debug() << endmsg;
         }
