@@ -43,42 +43,61 @@ int main() {
   namespace dm = tautool::gen::decaymode;
 
   // --- Hadronic, 1 prong: code = number of pi0 ---
-  if (!check("pi-", modeOf({{-211, -1.f}}), 0)) ++failures;
-  if (!check("pi- pi0", modeOf({{-211, -1.f}, {111, 0.f}}), 1)) ++failures;
-  if (!check("pi+ 2pi0", modeOf({{211, 1.f}, {111, 0.f}, {111, 0.f}}), 2)) ++failures;
-  if (!check("K- (prong)", modeOf({{-321, -1.f}}), 0)) ++failures;
-  if (!check("K*- (prong)", modeOf({{-323, -1.f}}), 0)) ++failures;
+  if (!check("pi-", modeOf({{-211, -1.f}}), 0))
+    ++failures;
+  if (!check("pi- pi0", modeOf({{-211, -1.f}, {111, 0.f}}), 1))
+    ++failures;
+  if (!check("pi+ 2pi0", modeOf({{211, 1.f}, {111, 0.f}, {111, 0.f}}), 2))
+    ++failures;
+  if (!check("K- (prong)", modeOf({{-321, -1.f}}), 0))
+    ++failures;
+  if (!check("K*- (prong)", modeOf({{-323, -1.f}}), 0))
+    ++failures;
 
   // --- Hadronic, 3 prongs: code = 10 + number of pi0 ---
-  if (!check("3pi", modeOf({{-211, -1.f}, {-211, -1.f}, {211, 1.f}}), dm::kThreeProngOffset)) ++failures;
+  if (!check("3pi", modeOf({{-211, -1.f}, {-211, -1.f}, {211, 1.f}}), dm::kThreeProngOffset))
+    ++failures;
   if (!check("3pi pi0", modeOf({{-211, -1.f}, {-211, -1.f}, {211, 1.f}, {111, 0.f}}), dm::kThreeProngOffset + 1))
     ++failures;
 
   // --- Extra neutrals do not change the ID ---
-  if (!check("pi- K0L", modeOf({{-211, -1.f}, {130, 0.f}}), 0)) ++failures;
-  if (!check("pi- photon", modeOf({{-211, -1.f}, {22, 0.f}}), 0)) ++failures;
+  if (!check("pi- K0L", modeOf({{-211, -1.f}, {130, 0.f}}), 0))
+    ++failures;
+  if (!check("pi- photon", modeOf({{-211, -1.f}, {22, 0.f}}), 0))
+    ++failures;
 
   // --- Leptonic ---
-  if (!check("mu-", modeOf({{13, -1.f}}), dm::kMuonic)) ++failures;
-  if (!check("e-", modeOf({{11, -1.f}}), dm::kElectronic)) ++failures;
-  if (!check("e+ photon", modeOf({{-11, 1.f}, {22, 0.f}}), dm::kElectronic)) ++failures;
+  if (!check("mu-", modeOf({{13, -1.f}}), dm::kMuonic))
+    ++failures;
+  if (!check("e-", modeOf({{11, -1.f}}), dm::kElectronic))
+    ++failures;
+  if (!check("e+ photon", modeOf({{-11, 1.f}, {22, 0.f}}), dm::kElectronic))
+    ++failures;
 
   // --- Unexpected charged particle ---
-  if (!check("proton", modeOf({{2212, 1.f}}), dm::kUnexpected)) ++failures;
+  if (!check("proton", modeOf({{2212, 1.f}}), dm::kUnexpected))
+    ++failures;
 
   // --- Priority between rules: mu > e > unexpected > hadronic ---
-  if (!check("mu + e", modeOf({{13, -1.f}, {11, -1.f}}), dm::kMuonic)) ++failures;
-  if (!check("e + proton", modeOf({{11, -1.f}, {2212, 1.f}}), dm::kElectronic)) ++failures;
-  if (!check("pi- + proton", modeOf({{-211, -1.f}, {2212, 1.f}}), dm::kUnexpected)) ++failures;
+  if (!check("mu + e", modeOf({{13, -1.f}, {11, -1.f}}), dm::kMuonic))
+    ++failures;
+  if (!check("e + proton", modeOf({{11, -1.f}, {2212, 1.f}}), dm::kElectronic))
+    ++failures;
+  if (!check("pi- + proton", modeOf({{-211, -1.f}, {2212, 1.f}}), dm::kUnexpected))
+    ++failures;
 
   // --- No valid assignment ---
-  if (!check("empty", modeOf({}), dm::kInvalid)) ++failures;
-  if (!check("visible charge 0", modeOf({{-211, -1.f}, {211, 1.f}}), dm::kInvalid)) ++failures;
-  if (!check("visible charge -2", modeOf({{-211, -1.f}, {-211, -1.f}}), dm::kInvalid)) ++failures;
-  if (!check("5 prongs, charge -1",
-             modeOf({{-211, -1.f}, {-211, -1.f}, {-211, -1.f}, {211, 1.f}, {211, 1.f}}), dm::kInvalid))
+  if (!check("empty", modeOf({}), dm::kInvalid))
     ++failures;
-  if (!check("only pi0", modeOf({{111, 0.f}}), dm::kInvalid)) ++failures;
+  if (!check("visible charge 0", modeOf({{-211, -1.f}, {211, 1.f}}), dm::kInvalid))
+    ++failures;
+  if (!check("visible charge -2", modeOf({{-211, -1.f}, {-211, -1.f}}), dm::kInvalid))
+    ++failures;
+  if (!check("5 prongs, charge -1", modeOf({{-211, -1.f}, {-211, -1.f}, {-211, -1.f}, {211, 1.f}, {211, 1.f}}),
+             dm::kInvalid))
+    ++failures;
+  if (!check("only pi0", modeOf({{111, 0.f}}), dm::kInvalid))
+    ++failures;
 
   return failures;
 }

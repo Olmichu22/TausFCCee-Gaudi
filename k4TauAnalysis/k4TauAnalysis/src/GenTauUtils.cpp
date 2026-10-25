@@ -1,21 +1,131 @@
 #include "k4TauAnalysis/GenTauUtils.h"
-#include <cstdlib>
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdlib>
 namespace {
 // |PDG| codes counted as prongs by the decay-mode ID (pi+-, K+-, K*+-).
 // Edit this list to change what counts as a prong.
 constexpr std::array kProngPdgs{211, 321, 323};
 
-bool isProng(int pdg) {
-  return std::ranges::find(kProngPdgs, std::abs(pdg)) != kProngPdgs.end();
+bool isProng(int pdg) { return std::ranges::find(kProngPdgs, std::abs(pdg)) != kProngPdgs.end(); }
+
+// |PDG| codes not counted as extra neutral.
+// Edit this list to change what counts as an extra neutral.
+constexpr std::array kNotExtraNeutralPdgs{22, 111, 12, 14, 16};
+
+bool isExtraNeutralPdg(int pdg) {
+  return std::ranges::find(kNotExtraNeutralPdgs, std::abs(pdg)) == kNotExtraNeutralPdgs.end();
 }
+
+// Self-conjugate states: charge conjugation leaves them unchanged
+// (-111 or -223 are not valid PDG codes). Same set as genDecayModes.SELF_CONJUGATE_PDGS.
+constexpr std::array kSelfConjugatePdgs{21,  22,  23,  25,       // gluon, gamma, Z, H
+                                        111, 113, 130, 221, 223, // pi0, rho0, K0_L, eta, omega
+                                        310, 331, 333, 335,      // K0_S, eta', phi, f2'
+                                        441, 443, 445};          // eta_c, J/psi, chi_c2
+
+int conjugatePdg(int pdg) {
+  const bool selfConjugate = std::ranges::find(kSelfConjugatePdgs, pdg) != kSelfConjugatePdgs.end();
+  return selfConjugate ? pdg : -pdg;
+}
+
+// Canonical daughter labels -> true mode. Same content as genDecayModes.MODE_TABLE.
+// Every key must already be in canonical order, otherwise it can never match.
+namespace tm = tautool::gen::truemode;
+const std::map<std::vector<int>, int32_t> kModeTable{
+    // Leptonic
+    {{11}, tm::kE},
+    {{13}, tm::kMu},
+
+    // Hadronic, no strangeness
+    {{-211}, tm::kPi},
+    {{-211, 111}, tm::kPiPi0},
+    {{-211, 111, 111}, tm::kPi2Pi0},
+    {{-211, 111, 111, 111}, tm::kPi3Pi0},
+    {{-211, 111, 111, 111, 111}, tm::kPi3Pi0},
+    {{211, -211, -211}, tm::k3Pi},
+    {{211, -211, -211, 111}, tm::k3PiPi0},
+    {{211, -211, -211, 111, 111}, tm::k3Pi2Pi0},
+    {{211, 211, -211, -211, -211}, tm::k5Pi},
+
+    // With kaons
+    {{-321}, tm::kK},
+    {{-321, 111}, tm::kKPi0},
+    {{-321, 111, 111}, tm::kK2Pi0},
+    {{-321, 111, 111, 111}, tm::kK2Pi0},
+    {{-311, -211}, tm::kK0Pi},
+    {{-311, -211, 111}, tm::kK0PiPi0},
+    {{-311, -211, 111, 111}, tm::kK0PiPi0},
+    {{-321, 211, -211}, tm::kKPiPi},
+    {{-321, 211, -211, 111}, tm::kKPiPi},
+    {{321, -321, -211}, tm::kKKPi},
+    {{321, -321, -211, 111}, tm::kKKPi},
+    {{-321, 311}, tm::kKK0},
+    {{-321, 311, 111}, tm::kKK0},
+    {{310, -211, 130}, tm::kK0K0Pi},
+    {{-211, 130, 130}, tm::kK0K0Pi},
+    {{311, -311, -211, 111}, tm::kK0K0Pi},
+    {{310, 310, -211}, tm::kK0K0Pi},
+    {{-311, 211, -211, -211}, tm::kK03Pi},
+
+    // Explicit resonance in the generator record
+    {{-321, 223}, tm::kOmega},
+    {{223, -211, 111, 111}, tm::kOmega},
+    {{223, 211, -211, -211}, tm::kOmega},
+    {{221, -211, 111}, tm::kEta},
+    {{221, 211, -211, -211}, tm::kEta},
+    {{-321, 221}, tm::kEta},
+    {{221, -211, 111, 111}, tm::kEta},
+    {{-323, 221}, tm::kKstar},
+};
 
 } // namespace
 namespace tautool::gen {
 
-int32_t visibleDecayMode(const std::vector<edm4hep::MCParticle>& constituents){
+std::vector<int> canonicalDaughters(const edm4hep::MCParticle& tau) {
+  std::vector<int> pdgs;
+  const bool fold = tau.getCharge() > 0; // tau+ -> tau- convention
+
+  for (const auto& dau : tau.getDaughters()) {
+    if (dau.getGeneratorStatus() == 0)
+      continue; // Geant4 secondary
+    if (isNeutrino(dau))
+      continue;
+    const int pdg = dau.getPDG();
+    if (std::abs(pdg) == 22)
+      continue; // photon off the tau: FSR
+    pdgs.push_back(fold ? conjugatePdg(pdg) : pdg);
+  }
+
+  // Python: sort(key=lambda p: (abs(p), p), reverse=True)
+  std::ranges::sort(pdgs, [](int a, int b) {
+    if (std::abs(a) != std::abs(b))
+      return std::abs(a) > std::abs(b);
+    return a > b;
+  });
+  return pdgs;
+}
+
+int32_t trueMode(const std::vector<int>& daughters) {
+  const auto it = kModeTable.find(daughters);
+  return it != kModeTable.end() ? it->second : truemode::kUnknown;
+}
+
+bool isExtraNeutral(const edm4hep::MCParticle& p) { return p.getCharge() == 0 && isExtraNeutralPdg(p.getPDG()); }
+
+std::vector<edm4hep::MCParticle> getDecayProducts(const edm4hep::MCParticle& p, bool excludeNeutrinos) {
+  std::vector<edm4hep::MCParticle> decayProducts;
+  detail::collectDecayProducts(p, decayProducts, excludeNeutrinos);
+  return decayProducts;
+}
+
+bool isNeutrino(const edm4hep::MCParticle& p) {
+  const int absPdg = std::abs(p.getPDG());
+  return (absPdg == 12 || absPdg == 14 || absPdg == 16);
+}
+
+int32_t visibleDecayMode(const std::vector<edm4hep::MCParticle>& constituents) {
   int countMuon = 0;
   int countElectron = 0;
   int countPions = 0;
@@ -23,23 +133,33 @@ int32_t visibleDecayMode(const std::vector<edm4hep::MCParticle>& constituents){
   int countOther = 0;
   double totalCharge = 0.;
 
-  for (const auto& dau : constituents){
+  for (const auto& dau : constituents) {
     const auto absPdg = std::abs(dau.getPDG());
     const auto charge = dau.getCharge();
-    if (absPdg==13) ++countMuon;
-    else if (absPdg==11) ++countElectron;
-    else if (isProng(absPdg)) ++countPions;
-    else if (absPdg==111) ++countPi0;
-    else if (charge!=0) ++countOther;
-    totalCharge+=charge;
+    if (absPdg == 13)
+      ++countMuon;
+    else if (absPdg == 11)
+      ++countElectron;
+    else if (isProng(absPdg))
+      ++countPions;
+    else if (absPdg == 111)
+      ++countPi0;
+    else if (charge != 0)
+      ++countOther;
+    totalCharge += charge;
   }
 
   const long visCharge = std::lround(totalCharge);
-  if (countMuon > 0) return decaymode::kMuonic;
-  if (countElectron > 0) return decaymode::kElectronic;
-  if (countOther > 0) return decaymode::kUnexpected;
-  if (std::abs(visCharge) == 1 && countPions == 1) return countPi0;
-  if (std::abs(visCharge) == 1 && countPions == 3) return decaymode::kThreeProngOffset + countPi0;
+  if (countMuon > 0)
+    return decaymode::kMuonic;
+  if (countElectron > 0)
+    return decaymode::kElectronic;
+  if (countOther > 0)
+    return decaymode::kUnexpected;
+  if (std::abs(visCharge) == 1 && countPions == 1)
+    return countPi0;
+  if (std::abs(visCharge) == 1 && countPions == 3)
+    return decaymode::kThreeProngOffset + countPi0;
 
   return decaymode::kInvalid;
 }
@@ -76,18 +196,3 @@ void collectDecayProducts(const edm4hep::MCParticle& p, std::vector<edm4hep::MCP
 }
 
 } // namespace tautool::gen::detail
-
-namespace tautool::gen {
-
-std::vector<edm4hep::MCParticle> getDecayProducts(const edm4hep::MCParticle& p, bool excludeNeutrinos) {
-  std::vector<edm4hep::MCParticle> decayProducts;
-  detail::collectDecayProducts(p, decayProducts, excludeNeutrinos);
-  return decayProducts;
-}
-
-bool isNeutrino(const edm4hep::MCParticle& p) {
-  const int absPdg = std::abs(p.getPDG());
-  return (absPdg == 12 || absPdg == 14 || absPdg == 16);
-}
-
-} // namespace tautool::gen

@@ -2,8 +2,10 @@
 # Configure (if needed), build and install TauTool and k4TauAnalysis, then run the tests.
 set -e
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$ROOT_DIR/setupKey4Hep.sh"
-
+# Load key4hep only if it is not already set up in this shell
+if [ -z "${KEY4HEP_STACK:-}" ]; then
+  source "$ROOT_DIR/setupKey4Hep.sh"
+fi
 # TauTool
 cd "$ROOT_DIR/TauTool"
 [ -f build/CMakeCache.txt ] || cmake -S . -B build -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/install"

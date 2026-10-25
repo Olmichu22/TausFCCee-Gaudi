@@ -25,9 +25,6 @@ add_test(NAME ReadExampleEventData
                COMMAND k4run k4TauAnalysis/options/readExampleEventData.py)
 set_property(TEST ReadExampleEventData APPEND PROPERTY DEPENDS CreateExampleEventData)
 
-add_test(NAME HelloWorldAlg
-               WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-               COMMAND k4run k4TauAnalysis/options/createHelloWorld.py)
 add_test(NAME GenTauClassifier
          WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
          COMMAND k4run k4TauAnalysis/options/runGenTauClassifier.py)
@@ -87,5 +84,14 @@ add_test(NAME DeltaRThetaPhi COMMAND testDeltaRThetaPhi)
 add_executable(testGetDecayProducts testGetDecayProducts.cpp)
 target_link_libraries(testGetDecayProducts PRIVATE TauClassification)
 add_test(NAME GetDecayProducts COMMAND testGetDecayProducts)
+
+add_executable(testIsExtraNeutral testIsExtraNeutral.cpp)
+target_link_libraries(testIsExtraNeutral PRIVATE TauClassification)
+add_test(NAME IsExtraNeutral COMMAND testIsExtraNeutral)
+
+add_executable(testTrueMode testTrueMode.cpp)
+target_link_libraries(testTrueMode PRIVATE TauClassification)
+add_test(NAME TrueMode COMMAND testTrueMode)
+
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 set_tests_properties(${test_names} PROPERTIES ENVIRONMENT "${test_environment}")
