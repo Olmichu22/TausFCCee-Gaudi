@@ -3,7 +3,13 @@
 #include <array>
 #include <cmath>
 #include <cstdlib>
+#include <map>
+#include <unordered_set>
 namespace {
+
+// |PDG| codes of charged particles a photon can be radiated from (e, mu, pi+-, K+-, K*+-).
+constexpr std::array kChargedRadPdgs{11, 13, 211, 321, 323};
+bool isChargedRadPdg(int pdg) { return std::ranges::find(kChargedRadPdgs, std::abs(pdg)) != kChargedRadPdgs.end(); }
 // |PDG| codes counted as prongs by the decay-mode ID (pi+-, K+-, K*+-).
 // Edit this list to change what counts as a prong.
 constexpr std::array kProngPdgs{211, 321, 323};
@@ -28,6 +34,15 @@ constexpr std::array kSelfConjugatePdgs{21,  22,  23,  25,       // gluon, gamma
 int conjugatePdg(int pdg) {
   const bool selfConjugate = std::ranges::find(kSelfConjugatePdgs, pdg) != kSelfConjugatePdgs.end();
   return selfConjugate ? pdg : -pdg;
+}
+
+bool isSimulationSecondary(const edm4hep::MCParticle& p) {
+  const int status = p.getGeneratorStatus();
+  if (status == 0)
+    return true;
+  if (status == 1)
+    return false;
+  return p.isCreatedInSimulation();
 }
 
 // Canonical daughter labels -> true mode. Same content as genDecayModes.MODE_TABLE.
@@ -82,6 +97,38 @@ const std::map<std::vector<int>, int32_t> kModeTable{
 
 } // namespace
 namespace tautool::gen {
+
+int32_t photonOrigin(const edm4hep::MCParticle& p) {
+  if (std::abs(p.getPDG()) != 22)
+    return photonorigin::kNotAPhoton;
+  if (isSimulationSecondary(p))
+    return photonorigin::kSimulation;
+  auto cur = p;
+  std::unordered_set<int> seen;
+  constexpr int kMaxDepth = 200;
+  for (int depth = 0; depth < kMaxDepth; ++depth) {
+    const auto parents = cur.getParents();
+    if (parents.empty())
+      break;
+
+    cur = parents[0];
+    const int idx = cur.getObjectID().index;
+    const int absCurPdg = std::abs(cur.getPDG());
+    if (!seen.insert(idx).second)
+      break;
+
+    if (absCurPdg == 22)
+      continue;
+    if (absCurPdg == 111)
+      return photonorigin::kPi0;
+    if (absCurPdg == 15)
+      return photonorigin::kTauFsr;
+    if (isChargedRadPdg(absCurPdg))
+      return photonorigin::kChargedRad;
+    return photonorigin::kOther;
+  }
+  return photonorigin::kOther;
+}
 
 std::vector<int> canonicalDaughters(const edm4hep::MCParticle& tau) {
   std::vector<int> pdgs;

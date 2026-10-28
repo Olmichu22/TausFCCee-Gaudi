@@ -93,5 +93,9 @@ add_executable(testTrueMode testTrueMode.cpp)
 target_link_libraries(testTrueMode PRIVATE TauClassification)
 add_test(NAME TrueMode COMMAND testTrueMode)
 
+add_executable(testPhotonOrigin testPhotonOrigin.cpp)
+target_link_libraries(testPhotonOrigin PRIVATE TauClassification)
+add_test(NAME PhotonOrigin COMMAND testPhotonOrigin)
+
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 set_tests_properties(${test_names} PROPERTIES ENVIRONMENT "${test_environment}")

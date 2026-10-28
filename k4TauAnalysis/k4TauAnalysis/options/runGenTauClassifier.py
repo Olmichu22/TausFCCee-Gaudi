@@ -15,5 +15,5 @@ alg = GenTauClassifier("GenTauClassifier",
                        OutputCollection="GenTauCandidates",
                        OutputLevel=DEBUG)
 
-ApplicationMgr(TopAlg=[alg], EvtSel="NONE", EvtMax=500,
+ApplicationMgr(TopAlg=[alg], EvtSel="NONE", EvtMax=1000,
                ExtSvc=[io], OutputLevel=INFO)

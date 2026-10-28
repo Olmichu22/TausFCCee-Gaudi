@@ -76,7 +76,7 @@ struct GenTauClassifier final
           debug() << "Tau " << p.getObjectID().index << " : " << cand.getConstituents().size() << " constituents, "
                   << cand.getNeutrinos().size() << " neutrinos. PDGs:";
           for (const auto& c : cand.getConstituents()) {
-            debug() << " " << c.getPDG();
+            debug() << " PDG: " << c.getPDG();
           }
           debug() << ".  Extra Neutrals:";
           for (const auto& extra : cand.getExtraNeutrals()) {

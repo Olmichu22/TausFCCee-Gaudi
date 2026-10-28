@@ -15,6 +15,29 @@ namespace tautool::gen {
 /// @return Canonical PDG list, e.g. {211, -211, -211, 111}
 std::vector<int> canonicalDaughters(const edm4hep::MCParticle& tau);
 
+/// Classifies where a generator-level photon comes from.
+/// Port of tauReco.photon_origin_info (origin code only).
+///
+/// Rules, in order:
+///   - not a photon (|PDG| != 22)                  -> photonorigin::kNotAPhoton
+///   - created by the detector simulation          -> photonorigin::kSimulation
+///     (generatorStatus 0, or isCreatedInSimulation() for status other than 0/1)
+///   - otherwise walk up the ancestors, skipping photon copies, and classify
+///     by the first non-photon ancestor:
+///       pi0                                       -> photonorigin::kPi0
+///       tau                                       -> photonorigin::kTauFsr
+///       e, mu, pi+-, K+-, K*+-                    -> photonorigin::kChargedRad
+///       anything else (e.g. eta -> gamma gamma)   -> photonorigin::kOther
+///   - no ancestor found (no parents, cycle or more than 200 steps)
+///                                                 -> photonorigin::kOther
+///
+/// Only the first parent is followed at each step, as in Python. Particles with
+/// several parents are therefore classified by their first one.
+///
+/// @param p Generator-level particle
+/// @return One of the tautool::gen::photonorigin codes
+int32_t photonOrigin(const edm4hep::MCParticle& p);
+
 /// True decay-mode code of a canonical daughter list (see canonicalDaughters).
 /// Port of genDecayModes.true_mode / MODE_TABLE.
 ///
@@ -34,7 +57,7 @@ int32_t trueMode(const std::vector<int>& daughters);
 int32_t visibleDecayMode(const std::vector<edm4hep::MCParticle>& constituents);
 
 /// Returns if a particle p is or not an extra neutral (different from 22, 111 and neutrinos)
-/// It first checks if charge(p) is 0, and then that it is not in kExtraNeutralsPdgs set
+/// It first checks if charge(p) is 0, and then that it is not in kNotExtraNeutralPdgs set
 bool isExtraNeutral(const edm4hep::MCParticle& p);
 
 /// Returns true if `p` is a neutrino or antineutrino (|PDG| 12, 14 or 16).
@@ -84,6 +107,7 @@ namespace tautool::gen::detail {
 /// @param out              Accumulator; results are appended, never cleared
 /// @param excludeNeutrinos Drop neutrinos from the result
 void collectDecayProducts(const edm4hep::MCParticle& p, std::vector<edm4hep::MCParticle>& out, bool excludeNeutrinos);
+
 } // namespace tautool::gen::detail
 
 namespace tautool::gen::truemode {
@@ -118,3 +142,14 @@ inline constexpr int32_t kEta = 41;
 inline constexpr int32_t kKstar = 42;
 
 } // namespace tautool::gen::truemode
+
+namespace tautool::gen::photonorigin {
+
+inline constexpr int32_t kNotAPhoton = -1;
+inline constexpr int32_t kPi0 = 0;
+inline constexpr int32_t kTauFsr = 1;
+inline constexpr int32_t kChargedRad = 2;
+inline constexpr int32_t kOther = 3;
+inline constexpr int32_t kSimulation = 4;
+
+} // namespace tautool::gen::photonorigin
