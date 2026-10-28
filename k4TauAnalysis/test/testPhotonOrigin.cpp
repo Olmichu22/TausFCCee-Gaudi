@@ -57,13 +57,20 @@ int main() {
     link(pion, gPion);
     link(pion, gSim);
 
-    if (!check("photon from pi0", photonOrigin(gPi0), po::kPi0)) ++failures;
-    if (!check("second photon from pi0", photonOrigin(gPi0b), po::kPi0)) ++failures;
-    if (!check("tau FSR", photonOrigin(gFsr), po::kTauFsr)) ++failures;
-    if (!check("radiated by pi-", photonOrigin(gPion), po::kChargedRad)) ++failures;
-    if (!check("Geant4 photon (status 0)", photonOrigin(gSim), po::kSimulation)) ++failures;
-    if (!check("pion is not a photon", photonOrigin(pion), po::kNotAPhoton)) ++failures;
-    if (!check("pi0 is not a photon", photonOrigin(pi0), po::kNotAPhoton)) ++failures;
+    if (!check("photon from pi0", photonOrigin(gPi0), po::kPi0))
+      ++failures;
+    if (!check("second photon from pi0", photonOrigin(gPi0b), po::kPi0))
+      ++failures;
+    if (!check("tau FSR", photonOrigin(gFsr), po::kTauFsr))
+      ++failures;
+    if (!check("radiated by pi-", photonOrigin(gPion), po::kChargedRad))
+      ++failures;
+    if (!check("Geant4 photon (status 0)", photonOrigin(gSim), po::kSimulation))
+      ++failures;
+    if (!check("pion is not a photon", photonOrigin(pion), po::kNotAPhoton))
+      ++failures;
+    if (!check("pi0 is not a photon", photonOrigin(pi0), po::kNotAPhoton))
+      ++failures;
   }
 
   // Photon copies are skipped: tau -> gamma (status 2) -> gamma (status 1)
@@ -74,7 +81,8 @@ int main() {
     auto gFinal = make(coll, 22, 1);
     link(tau, gCopy);
     link(gCopy, gFinal);
-    if (!check("photon copy chain", photonOrigin(gFinal), po::kTauFsr)) ++failures;
+    if (!check("photon copy chain", photonOrigin(gFinal), po::kTauFsr))
+      ++failures;
   }
 
   // Radiation from an electron counts as charged radiation
@@ -83,7 +91,8 @@ int main() {
     auto e = make(coll, 11, 1);
     auto g = make(coll, 22, 1);
     link(e, g);
-    if (!check("radiated by e-", photonOrigin(g), po::kChargedRad)) ++failures;
+    if (!check("radiated by e-", photonOrigin(g), po::kChargedRad))
+      ++failures;
   }
 
   // Any other ancestor -> other (eta -> gamma gamma)
@@ -92,7 +101,8 @@ int main() {
     auto eta = make(coll, 221, 2);
     auto g = make(coll, 22, 1);
     link(eta, g);
-    if (!check("photon from eta", photonOrigin(g), po::kOther)) ++failures;
+    if (!check("photon from eta", photonOrigin(g), po::kOther))
+      ++failures;
   }
 
   // Status other than 0/1: the createdInSimulation flag decides
@@ -104,15 +114,18 @@ int main() {
     gSimFlag.setCreatedInSimulation(true);
     link(tau, gGen);
     link(tau, gSimFlag);
-    if (!check("status 2, generator", photonOrigin(gGen), po::kTauFsr)) ++failures;
-    if (!check("status 2, created in simulation", photonOrigin(gSimFlag), po::kSimulation)) ++failures;
+    if (!check("status 2, generator", photonOrigin(gGen), po::kTauFsr))
+      ++failures;
+    if (!check("status 2, created in simulation", photonOrigin(gSimFlag), po::kSimulation))
+      ++failures;
   }
 
   // A photon without parents does not crash -> other
   {
     edm4hep::MCParticleCollection coll;
     auto g = make(coll, 22, 1);
-    if (!check("no parents", photonOrigin(g), po::kOther)) ++failures;
+    if (!check("no parents", photonOrigin(g), po::kOther))
+      ++failures;
   }
 
   // A cycle of photon copies terminates instead of looping forever -> other
@@ -122,7 +135,8 @@ int main() {
     auto g2 = make(coll, 22, 2);
     link(g1, g2);
     link(g2, g1);
-    if (!check("cycle of photons", photonOrigin(g1), po::kOther)) ++failures;
+    if (!check("cycle of photons", photonOrigin(g1), po::kOther))
+      ++failures;
   }
 
   return failures;

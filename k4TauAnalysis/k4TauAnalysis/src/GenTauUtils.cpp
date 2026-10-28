@@ -7,6 +7,27 @@
 #include <unordered_set>
 namespace {
 
+/// From a tau, iterates over its tau daughters until finds the generatorStatus 2 copy
+edm4hep::MCParticle finalTauCopy(const edm4hep::MCParticle& t) {
+  constexpr int kMaxDepth = 200;
+  auto curr = t;
+  for (int depth = 0; depth < kMaxDepth; ++depth) {
+    if (tautool::gen::isFinalTau(curr))
+      return curr;
+    bool foundTauDau = false;
+    for (const auto& dau : curr.getDaughters()) {
+      if (std::abs(dau.getPDG()) == 15) {
+        foundTauDau = true;
+        curr = dau;
+        break;
+      }
+    }
+    if (!foundTauDau)
+      break;
+  }
+  return curr;
+}
+
 // |PDG| codes of charged particles a photon can be radiated from (e, mu, pi+-, K+-, K*+-).
 constexpr std::array kChargedRadPdgs{11, 13, 211, 321, 323};
 bool isChargedRadPdg(int pdg) { return std::ranges::find(kChargedRadPdgs, std::abs(pdg)) != kChargedRadPdgs.end(); }
@@ -97,6 +118,47 @@ const std::map<std::vector<int>, int32_t> kModeTable{
 
 } // namespace
 namespace tautool::gen {
+
+TauOrigin tauOrigin(const edm4hep::MCParticle& t) {
+  TauOrigin origin{};
+  std::optional<edm4hep::MCParticle> photon;
+  bool passedNonTau = false;
+  constexpr int kMaxDepth = 200;
+  auto cur = t;
+  std::unordered_set<int> seen;
+
+  for (int depth = 0; depth < kMaxDepth; ++depth) {
+    auto parents = cur.getParents();
+    if (parents.empty())
+      break;
+    cur = parents[0];
+    const auto pdg = cur.getPDG();
+    const int idx = cur.getObjectID().index;
+    if (!seen.insert(idx).second)
+      break;
+    if (!passedNonTau) {
+      if (std::abs(pdg) == 15) {
+        continue;
+      } else {
+        passedNonTau = true;
+        origin.originPDG = pdg;
+        if (origin.originPDG == 22)
+          photon = cur;
+      }
+    } else {
+
+      if (pdg == 22 && !photon)
+        photon = cur;
+      if (std::abs(pdg) == 15) {
+        origin.motherTau = finalTauCopy(cur);
+        origin.radiativePhoton = photon;
+        break;
+      }
+    }
+  }
+
+  return origin;
+}
 
 int32_t photonOrigin(const edm4hep::MCParticle& p) {
   if (std::abs(p.getPDG()) != 22)

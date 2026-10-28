@@ -1,8 +1,38 @@
 #pragma once
 #include "edm4hep/MCParticle.h"
 #include <cstdint>
+#include <optional>
 #include <vector>
+
 namespace tautool::gen {
+/// Provenance of a generator-level tau, as returned by tauOrigin.
+struct TauOrigin {
+  int32_t originPDG = 0;                              ///< PDG of the first non-tau ancestor (23 = Z, 22 = gamma*)
+  std::optional<edm4hep::MCParticle> motherTau;       ///< Status-2 copy of the mother tau; empty if primary
+  std::optional<edm4hep::MCParticle> radiativePhoton; ///< Photon in tau -> gamma -> tau tau; empty if primary
+};
+
+/// Traces where a generator-level tau comes from, separating primary taus from
+/// radiative ones (tau -> gamma -> tau tau). Port of tauReco.classify_tau_origin.
+///
+/// Walks up the ancestors, following the first parent at each step:
+///   1. Copies of the tau itself are skipped. The first non-tau ancestor gives
+///      originPDG (23 = Z, 22 = gamma*). If it is a photon, it is kept as the
+///      candidate radiative photon.
+///   2. The walk continues upwards. If another tau shows up, the candidate is
+///      secondary: that tau is the mother, and the photon kept on the way (the
+///      first one found) is the radiative photon.
+/// A tau from gamma* also hangs from a photon, so a photon parent alone does not
+/// make a tau secondary: only a tau above the first non-tau ancestor does.
+///
+/// The walk stops at the first ancestor without parents, on a cycle or after
+/// 200 steps. Particles with several parents are followed through their first one.
+///
+/// @param tau Generator-level tau (typically status 2)
+/// @return originPDG always set; motherTau (status-2 copy of the mother) and
+///         radiativePhoton set only for secondary taus
+TauOrigin tauOrigin(const edm4hep::MCParticle& tau);
+
 /// Canonical list of the tau's direct-daughter PDG codes.
 /// Port of genDecayModes.canonical_daughters:
 ///   - only direct daughters; generatorStatus == 0 (Geant4), neutrinos and

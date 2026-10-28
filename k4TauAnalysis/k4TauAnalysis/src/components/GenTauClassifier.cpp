@@ -47,6 +47,11 @@ struct GenTauClassifier final
           } else {
             comps.push_back(prod);
             cand.addToConstituents(prod);
+            const int32_t photonOriginId = tautool::gen::photonOrigin(prod);
+            cand.addToConstituentPhotonOrigin(photonOriginId);
+            if (photonOriginId == tautool::gen::photonorigin::kTauFsr) {
+              cand.addToFsrPhotons(prod);
+            }
             const auto prodP4 = edm4hep::utils::p4(prod, edm4hep::utils::UseMass);
             visP4 += prodP4;
             const auto dR = tautool::kin::deltaRThetaPhi(tauP4, prodP4);
@@ -72,6 +77,14 @@ struct GenTauClassifier final
         const auto dausPdgs = tautool::gen::canonicalDaughters(p);
         cand.setTrueMode(tautool::gen::trueMode(dausPdgs));
 
+        // TauParents
+        const auto origin = tautool::gen::tauOrigin(p);
+        cand.setOriginPDG(origin.originPDG);
+        if (origin.motherTau)
+          cand.setMotherTau(*origin.motherTau);
+        if (origin.radiativePhoton)
+          cand.setRadiativePhoton(*origin.radiativePhoton);
+
         if (msgLevel(MSG::DEBUG)) {
           debug() << "Tau " << p.getObjectID().index << " : " << cand.getConstituents().size() << " constituents, "
                   << cand.getNeutrinos().size() << " neutrinos. PDGs:";
@@ -85,7 +98,17 @@ struct GenTauClassifier final
           debug() << ". genMass " << cand.getGenMass() << ", visMass " << cand.getVisMass() << ", maxConeAngle "
                   << cand.getMaxConeAngle() << ", decayMode " << cand.getDecayMode() << ", trueMode "
                   << cand.getTrueMode();
-
+          debug() << ", originPDG " << cand.getOriginPDG();
+          if (cand.getMotherTau().isAvailable()) {
+            debug() << ", secondary: mother tau " << cand.getMotherTau().getObjectID().index;
+            if (cand.getRadiativePhoton().isAvailable()) {
+              debug() << ", radiative photon " << cand.getRadiativePhoton().getObjectID().index;
+            } else {
+              debug() << ", no radiative photon";
+            }
+          } else {
+            debug() << ", primary";
+          }
           debug() << endmsg;
         }
       }

@@ -97,5 +97,9 @@ add_executable(testPhotonOrigin testPhotonOrigin.cpp)
 target_link_libraries(testPhotonOrigin PRIVATE TauClassification)
 add_test(NAME PhotonOrigin COMMAND testPhotonOrigin)
 
+add_executable(testTauOrigin testTauOrigin.cpp)
+target_link_libraries(testTauOrigin PRIVATE TauClassification)
+add_test(NAME TauOrigin COMMAND testTauOrigin)
+
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 set_tests_properties(${test_names} PROPERTIES ENVIRONMENT "${test_environment}")
