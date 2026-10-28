@@ -1,4 +1,5 @@
 #include "k4TauAnalysis/GenTauUtils.h"
+#include "k4TauAnalysis/PdgCodes.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -6,6 +7,8 @@
 #include <map>
 #include <unordered_set>
 namespace {
+
+namespace pdgid = tautool::pdgid;
 
 /// From a tau, iterates over its tau daughters until finds the generatorStatus 2 copy
 edm4hep::MCParticle finalTauCopy(const edm4hep::MCParticle& t) {
@@ -16,7 +19,7 @@ edm4hep::MCParticle finalTauCopy(const edm4hep::MCParticle& t) {
       return curr;
     bool foundTauDau = false;
     for (const auto& dau : curr.getDaughters()) {
-      if (std::abs(dau.getPDG()) == 15) {
+      if (std::abs(dau.getPDG()) == pdgid::kTau) {
         foundTauDau = true;
         curr = dau;
         break;
@@ -137,19 +140,19 @@ TauOrigin tauOrigin(const edm4hep::MCParticle& t) {
     if (!seen.insert(idx).second)
       break;
     if (!passedNonTau) {
-      if (std::abs(pdg) == 15) {
+      if (std::abs(pdg) == pdgid::kTau) {
         continue;
       } else {
         passedNonTau = true;
         origin.originPDG = pdg;
-        if (origin.originPDG == 22)
+        if (origin.originPDG == pdgid::kPhoton)
           photon = cur;
       }
     } else {
 
-      if (pdg == 22 && !photon)
+      if (pdg == pdgid::kPhoton && !photon)
         photon = cur;
-      if (std::abs(pdg) == 15) {
+      if (std::abs(pdg) == pdgid::kTau) {
         origin.motherTau = finalTauCopy(cur);
         origin.radiativePhoton = photon;
         break;
@@ -161,7 +164,7 @@ TauOrigin tauOrigin(const edm4hep::MCParticle& t) {
 }
 
 int32_t photonOrigin(const edm4hep::MCParticle& p) {
-  if (std::abs(p.getPDG()) != 22)
+  if (std::abs(p.getPDG()) != pdgid::kPhoton)
     return photonorigin::kNotAPhoton;
   if (isSimulationSecondary(p))
     return photonorigin::kSimulation;
@@ -179,11 +182,11 @@ int32_t photonOrigin(const edm4hep::MCParticle& p) {
     if (!seen.insert(idx).second)
       break;
 
-    if (absCurPdg == 22)
+    if (absCurPdg == pdgid::kPhoton)
       continue;
-    if (absCurPdg == 111)
+    if (absCurPdg == pdgid::kPi0)
       return photonorigin::kPi0;
-    if (absCurPdg == 15)
+    if (absCurPdg == pdgid::kTau)
       return photonorigin::kTauFsr;
     if (isChargedRadPdg(absCurPdg))
       return photonorigin::kChargedRad;
@@ -202,7 +205,7 @@ std::vector<int> canonicalDaughters(const edm4hep::MCParticle& tau) {
     if (isNeutrino(dau))
       continue;
     const int pdg = dau.getPDG();
-    if (std::abs(pdg) == 22)
+    if (std::abs(pdg) == pdgid::kPhoton)
       continue; // photon off the tau: FSR
     pdgs.push_back(fold ? conjugatePdg(pdg) : pdg);
   }
@@ -231,7 +234,7 @@ std::vector<edm4hep::MCParticle> getDecayProducts(const edm4hep::MCParticle& p, 
 
 bool isNeutrino(const edm4hep::MCParticle& p) {
   const int absPdg = std::abs(p.getPDG());
-  return (absPdg == 12 || absPdg == 14 || absPdg == 16);
+  return (absPdg == pdgid::kNuE || absPdg == pdgid::kNuMu || absPdg == pdgid::kNuTau);
 }
 
 int32_t visibleDecayMode(const std::vector<edm4hep::MCParticle>& constituents) {
@@ -245,13 +248,13 @@ int32_t visibleDecayMode(const std::vector<edm4hep::MCParticle>& constituents) {
   for (const auto& dau : constituents) {
     const auto absPdg = std::abs(dau.getPDG());
     const auto charge = dau.getCharge();
-    if (absPdg == 13)
+    if (absPdg == pdgid::kMuon)
       ++countMuon;
-    else if (absPdg == 11)
+    else if (absPdg == pdgid::kElectron)
       ++countElectron;
     else if (isProng(absPdg))
       ++countPions;
-    else if (absPdg == 111)
+    else if (absPdg == pdgid::kPi0)
       ++countPi0;
     else if (charge != 0)
       ++countOther;
@@ -273,7 +276,7 @@ int32_t visibleDecayMode(const std::vector<edm4hep::MCParticle>& constituents) {
   return decaymode::kInvalid;
 }
 
-bool isFinalTau(const edm4hep::MCParticle& p) { return std::abs(p.getPDG()) == 15 && p.getGeneratorStatus() == 2; }
+bool isFinalTau(const edm4hep::MCParticle& p) { return std::abs(p.getPDG()) == pdgid::kTau && p.getGeneratorStatus() == 2; }
 } // namespace tautool::gen
 
 namespace tautool::gen::detail {
@@ -282,7 +285,7 @@ void collectDecayProducts(const edm4hep::MCParticle& p, std::vector<edm4hep::MCP
   const int absPdg = std::abs(p.getPDG());
 
   // Rule 1: pi0 -> push_back and return
-  if (absPdg == 111) {
+  if (absPdg == pdgid::kPi0) {
     out.push_back(p);
     return;
   }
