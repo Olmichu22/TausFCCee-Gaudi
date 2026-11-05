@@ -72,7 +72,9 @@ struct GenTauClassifier final
         cand.setVisMomentum(visP);
         cand.setVisMass(visP4.M());
         cand.setMaxConeAngle(static_cast<float>(maxDR));
-
+        if (p.hasHelicity()) {
+          cand.setHelicity(p.getHelicity());
+        }
         // TrueMode (direct tau daughters)
         const auto dausPdgs = tautool::gen::canonicalDaughters(p);
         cand.setTrueMode(tautool::gen::trueMode(dausPdgs));
@@ -97,7 +99,7 @@ struct GenTauClassifier final
           }
           debug() << ". genMass " << cand.getGenMass() << ", visMass " << cand.getVisMass() << ", maxConeAngle "
                   << cand.getMaxConeAngle() << ", decayMode " << cand.getDecayMode() << ", trueMode "
-                  << cand.getTrueMode();
+                  << cand.getTrueMode() << ", helicity " << cand.getHelicity();
           debug() << ", originPDG " << cand.getOriginPDG();
           if (cand.getMotherTau().isAvailable()) {
             debug() << ", secondary: mother tau " << cand.getMotherTau().getObjectID().index;

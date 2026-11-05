@@ -17,7 +17,7 @@ datatypes:
       - edm4hep::Vector3d visMomentum [GeV]    // Visible momentum
       - double visMass [GeV]                   // Visible mass
       - float maxConeAngle [rad]               // Max (theta, phi) distance between the tau and its visible constituents.
-      - float helicity{-2.0f}                  // Tau helicity (-2.0 = not computed)
+      - int32_t helicity{-2}                  // Tau helicity +1 or -1 (-2 = not computed)
     VectorMembers:
       - int32_t constituentPhotonOrigin   // Photon origin per constituent, same order as constituents (-1 for non-photons)
     OneToOneRelations:

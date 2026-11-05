@@ -22,22 +22,25 @@ void link(edm4hep::MutableMCParticle& mother, edm4hep::MutableMCParticle& daught
 }
 
 bool checkPdg(const char* name, int32_t got, int32_t expected) {
-  if (got == expected) return true;
+  if (got == expected)
+    return true;
   std::cerr << name << " failed: originPDG expected " << expected << ", got " << got << "\n";
   return false;
 }
 
 // The optional must be empty (primary tau)
 bool checkEmpty(const char* name, const std::optional<edm4hep::MCParticle>& got) {
-  if (!got) return true;
-  std::cerr << name << " failed: expected empty, got PDG " << got->getPDG() << " (index "
-            << got->getObjectID().index << ")\n";
+  if (!got)
+    return true;
+  std::cerr << name << " failed: expected empty, got PDG " << got->getPDG() << " (index " << got->getObjectID().index
+            << ")\n";
   return false;
 }
 
 // The optional must hold exactly `expected` (same object, not just same PDG)
 bool checkIs(const char* name, const std::optional<edm4hep::MCParticle>& got, const edm4hep::MCParticle& expected) {
-  if (got && *got == expected) return true;
+  if (got && *got == expected)
+    return true;
   std::cerr << name << " failed: expected index " << expected.getObjectID().index << ", got ";
   if (got) {
     std::cerr << "index " << got->getObjectID().index << "\n";
@@ -65,9 +68,12 @@ int main() {
       link(z, copy);
       link(copy, final);
       const auto origin = tauOrigin(final);
-      if (!checkPdg("Z: originPDG", origin.originPDG, 23)) ++failures;
-      if (!checkEmpty("Z: motherTau", origin.motherTau)) ++failures;
-      if (!checkEmpty("Z: radiativePhoton", origin.radiativePhoton)) ++failures;
+      if (!checkPdg("Z: originPDG", origin.originPDG, 23))
+        ++failures;
+      if (!checkEmpty("Z: motherTau", origin.motherTau))
+        ++failures;
+      if (!checkEmpty("Z: radiativePhoton", origin.radiativePhoton))
+        ++failures;
     }
   }
 
@@ -81,9 +87,12 @@ int main() {
       auto final = make(coll, pdg, 2);
       link(gamma, final);
       const auto origin = tauOrigin(final);
-      if (!checkPdg("gamma*: originPDG", origin.originPDG, 22)) ++failures;
-      if (!checkEmpty("gamma*: motherTau", origin.motherTau)) ++failures;
-      if (!checkEmpty("gamma*: radiativePhoton", origin.radiativePhoton)) ++failures;
+      if (!checkPdg("gamma*: originPDG", origin.originPDG, 22))
+        ++failures;
+      if (!checkEmpty("gamma*: motherTau", origin.motherTau))
+        ++failures;
+      if (!checkEmpty("gamma*: radiativePhoton", origin.radiativePhoton))
+        ++failures;
     }
   }
 
@@ -100,14 +109,19 @@ int main() {
       auto secondary = make(coll, pdg, 2);
       link(gamma, secondary);
       const auto origin = tauOrigin(secondary);
-      if (!checkPdg("secondary: originPDG", origin.originPDG, 22)) ++failures;
-      if (!checkIs("secondary: motherTau", origin.motherTau, mother)) ++failures;
-      if (!checkIs("secondary: radiativePhoton", origin.radiativePhoton, gamma)) ++failures;
+      if (!checkPdg("secondary: originPDG", origin.originPDG, 22))
+        ++failures;
+      if (!checkIs("secondary: motherTau", origin.motherTau, mother))
+        ++failures;
+      if (!checkIs("secondary: radiativePhoton", origin.radiativePhoton, gamma))
+        ++failures;
     }
     // ...and the mother itself is still primary
     const auto origin = tauOrigin(mother);
-    if (!checkPdg("mother of secondary: originPDG", origin.originPDG, 23)) ++failures;
-    if (!checkEmpty("mother of secondary: motherTau", origin.motherTau)) ++failures;
+    if (!checkPdg("mother of secondary: originPDG", origin.originPDG, 23))
+      ++failures;
+    if (!checkEmpty("mother of secondary: motherTau", origin.motherTau))
+      ++failures;
   }
 
   // Secondary tau whose photon hangs from an intermediate copy of the mother:
@@ -125,8 +139,10 @@ int main() {
     link(motherCopy, motherFinal);
     link(gamma, secondary);
     const auto origin = tauOrigin(secondary);
-    if (!checkIs("via copy: motherTau is the status-2 copy", origin.motherTau, motherFinal)) ++failures;
-    if (!checkIs("via copy: radiativePhoton", origin.radiativePhoton, gamma)) ++failures;
+    if (!checkIs("via copy: motherTau is the status-2 copy", origin.motherTau, motherFinal))
+      ++failures;
+    if (!checkIs("via copy: radiativePhoton", origin.radiativePhoton, gamma))
+      ++failures;
   }
 
   // The radiative photon has a copy above it: the first photon found going up is kept
@@ -143,8 +159,10 @@ int main() {
     link(gammaTop, gammaLow);
     link(gammaLow, secondary);
     const auto origin = tauOrigin(secondary);
-    if (!checkIs("photon copies: motherTau", origin.motherTau, mother)) ++failures;
-    if (!checkIs("photon copies: radiativePhoton is the lowest copy", origin.radiativePhoton, gammaLow)) ++failures;
+    if (!checkIs("photon copies: motherTau", origin.motherTau, mother))
+      ++failures;
+    if (!checkIs("photon copies: radiativePhoton is the lowest copy", origin.radiativePhoton, gammaLow))
+      ++failures;
   }
 
   // A tau without parents does not crash -> originPDG 0, primary
@@ -152,8 +170,10 @@ int main() {
     edm4hep::MCParticleCollection coll;
     auto tau = make(coll, 15, 2);
     const auto origin = tauOrigin(tau);
-    if (!checkPdg("no parents: originPDG", origin.originPDG, 0)) ++failures;
-    if (!checkEmpty("no parents: motherTau", origin.motherTau)) ++failures;
+    if (!checkPdg("no parents: originPDG", origin.originPDG, 0))
+      ++failures;
+    if (!checkEmpty("no parents: motherTau", origin.motherTau))
+      ++failures;
   }
 
   // A cycle of tau copies terminates instead of looping forever
@@ -164,8 +184,10 @@ int main() {
     link(tau1, tau2);
     link(tau2, tau1);
     const auto origin = tauOrigin(tau1);
-    if (!checkPdg("cycle: originPDG", origin.originPDG, 0)) ++failures;
-    if (!checkEmpty("cycle: motherTau", origin.motherTau)) ++failures;
+    if (!checkPdg("cycle: originPDG", origin.originPDG, 0))
+      ++failures;
+    if (!checkEmpty("cycle: motherTau", origin.motherTau))
+      ++failures;
   }
 
   return failures;
