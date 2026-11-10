@@ -29,3 +29,18 @@ datatypes:
       - edm4hep::MCParticle neutrinos          // Neutrinos from the tau decay
       - edm4hep::MCParticle extraNeutrals      // Subset of constituents
       - edm4hep::MCParticle fsrPhotons         // Subset of constituents
+  
+  tautool::RecoTauCandidate:
+    Description: "Reconstruction-level tau candidate built from PFOs: visible decay topology and kinematics."
+    Author: "Olmo Arquero"
+    Members:
+      - int32_t decayMode{-999}                // N pi0 / 10 + N pi0 (gen encoding); -1 invalid, -20/-21 neutron misID
+      - int32_t photonDecayMode{-999}          // N photons (max 9) / 10 + N photons; -1 invalid, -20/-21 neutron misID
+      - int32_t charge [e]                     // Sum of the constituent charges
+      - edm4hep::Vector3d momentum [GeV]       // Visible momentum
+      - double mass [GeV]                      // Visible mass
+      - float maxConeAngle [rad]               // Max (theta, phi) distance between the leading pion and the constituents
+    OneToOneRelations:
+      - edm4hep::ReconstructedParticle leadingPion  // Seed charged pion of the candidate
+    OneToManyRelations:
+      - edm4hep::ReconstructedParticle constituents // Counted PFOs in the cone (pi+-, photons, neutrons), leading pion included

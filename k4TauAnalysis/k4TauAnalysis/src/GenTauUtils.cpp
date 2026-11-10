@@ -276,7 +276,9 @@ int32_t visibleDecayMode(const std::vector<edm4hep::MCParticle>& constituents) {
   return decaymode::kInvalid;
 }
 
-bool isFinalTau(const edm4hep::MCParticle& p) { return std::abs(p.getPDG()) == pdgid::kTau && p.getGeneratorStatus() == 2; }
+bool isFinalTau(const edm4hep::MCParticle& p) {
+  return std::abs(p.getPDG()) == pdgid::kTau && p.getGeneratorStatus() == 2;
+}
 } // namespace tautool::gen
 
 namespace tautool::gen::detail {

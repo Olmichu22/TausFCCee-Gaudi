@@ -101,5 +101,13 @@ add_executable(testTauOrigin testTauOrigin.cpp)
 target_link_libraries(testTauOrigin PRIVATE TauClassification)
 add_test(NAME TauOrigin COMMAND testTauOrigin)
 
+add_executable(testToPi0DecayMode testToPi0DecayMode.cpp)
+target_link_libraries(testToPi0DecayMode PRIVATE TauClassification)
+add_test(NAME ToPi0DecayMode COMMAND testToPi0DecayMode)
+
+add_executable(testPhotonDecayMode testPhotonDecayMode.cpp)
+target_link_libraries(testPhotonDecayMode PRIVATE TauClassification)
+add_test(NAME PhotonDecayMode COMMAND testPhotonDecayMode)
+
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 set_tests_properties(${test_names} PROPERTIES ENVIRONMENT "${test_environment}")

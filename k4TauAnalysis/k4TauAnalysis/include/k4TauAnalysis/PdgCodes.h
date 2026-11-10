@@ -24,4 +24,7 @@ inline constexpr int kPiPlus = 211;
 inline constexpr int kKPlus = 321;
 inline constexpr int kKstarPlus = 323;
 
+// Baryons
+inline constexpr int kNeutron = 2112;
+
 } // namespace tautool::pdgid
