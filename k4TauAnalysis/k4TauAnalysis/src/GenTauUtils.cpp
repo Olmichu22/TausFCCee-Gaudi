@@ -198,7 +198,6 @@ int32_t photonOrigin(const edm4hep::MCParticle& p) {
 std::vector<int> canonicalDaughters(const edm4hep::MCParticle& tau) {
   std::vector<int> pdgs;
   const bool fold = tau.getCharge() > 0; // tau+ -> tau- convention
-
   for (const auto& dau : tau.getDaughters()) {
     if (dau.getGeneratorStatus() == 0)
       continue; // Geant4 secondary
