@@ -113,6 +113,9 @@ add_executable(testBuildTauFromPion testBuildTauFromPion.cpp)
 target_link_libraries(testBuildTauFromPion PRIVATE TauClassification)
 add_test(NAME BuildTauFromPion COMMAND testBuildTauFromPion)
 
+add_executable(testSeedsAndDuplicates testSeedsAndDuplicates.cpp)
+target_link_libraries(testSeedsAndDuplicates PRIVATE TauClassification)
+add_test(NAME SeedsAndDuplicates COMMAND testSeedsAndDuplicates)
 
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 set_tests_properties(${test_names} PROPERTIES ENVIRONMENT "${test_environment}")

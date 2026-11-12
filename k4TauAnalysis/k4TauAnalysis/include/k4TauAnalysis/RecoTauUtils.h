@@ -100,4 +100,31 @@ int32_t photonDecayMode(int nPions, int nPhotons, int nNeutrons, int charge, boo
 /// @return Constituents, counters, charge, four-vector, maxDR and photon decay mode
 RecoTauBuild buildTauFromPion(const edm4hep::ReconstructedParticle& seed,
                               const edm4hep::ReconstructedParticleCollection& pfos, const RecoTauCuts& cuts);
+/// Selects the PFOs that can seed a reco tau, sorted by momentum (highest first).
+/// Port of the seed selection in tauReco.findAllTaus: charged pions (|PDG| 211)
+/// whose momentum is inside both cuts.pionP and cuts.anyP.
+///
+/// Difference with Python: the seeds are sorted by |p| in descending order, so the
+/// most energetic pion seeds first and the duplicate removal does not depend on
+/// the order of the PFO collection.
+///
+/// @param pfos All PFOs of the event
+/// @param cuts Momentum windows (only pionP and anyP are used)
+/// @return Seed candidates, highest momentum first
+std::vector<edm4hep::ReconstructedParticle> selectSeeds(const edm4hep::ReconstructedParticleCollection& pfos,
+                                                        const RecoTauCuts& cuts);
+
+/// Returns true if `candidate` duplicates a tau candidate already accepted.
+/// Port of the duplicate check in tauReco.findAllTaus: a candidate is a duplicate
+/// if its four-vector lies within (theta, phi) distance minDR of any accepted one.
+/// Needed because every charged pion of a 3-prong tau is tried as a seed.
+///
+/// Takes full RecoTauBuild objects (not only four-vectors) so the criterion can be
+/// changed later, e.g. to shared seeds or constituents, without changing callers.
+///
+/// @param candidate Candidate just built
+/// @param accepted  Candidates already accepted in this event
+/// @param minDR     Distance below which two candidates are the same tau [rad]
+/// @return true if `candidate` must be dropped
+bool isDuplicate(const RecoTauBuild& candidate, const std::vector<RecoTauBuild>& accepted, double minDR);
 } // namespace tautool::reco

@@ -1,5 +1,6 @@
 #include "k4TauAnalysis/RecoTauUtils.h"
 #include "edm4hep/utils/kinematics.h"
+#include "edm4hep/utils/vector_utils.h"
 #include "k4TauAnalysis/GenTauUtils.h"
 #include "k4TauAnalysis/KinematicUtils.h"
 #include "k4TauAnalysis/PdgCodes.h"
@@ -88,5 +89,29 @@ RecoTauBuild buildTauFromPion(const edm4hep::ReconstructedParticle& seed,
       photonDecayMode(result.nPions, result.nPhotons, result.nNeutrons, result.charge, cuts.chargeCondition);
   result.photonDecayMode = photonMode;
   return result;
+}
+bool isDuplicate(const RecoTauBuild& candidate, const std::vector<RecoTauBuild>& accepted, double minDR) {
+  for (const auto& tauCand : accepted) {
+    const auto dR = kin::deltaRThetaPhi(candidate.p4, tauCand.p4);
+    if (dR < minDR)
+      return true;
+  }
+  return false;
+}
+std::vector<edm4hep::ReconstructedParticle> selectSeeds(const edm4hep::ReconstructedParticleCollection& pfos,
+                                                        const RecoTauCuts& cuts) {
+  std::vector<edm4hep::ReconstructedParticle> seeds;
+  for (const auto& pfo : pfos) {
+    const auto candP4 = edm4hep::utils::p4(pfo, edm4hep::utils::UseMass);
+    const double p = candP4.P();
+    const auto absPDG = std::abs(pfo.getPDG());
+    if (absPDG == pdgid::kPiPlus && cuts.anyP.contains(p) && cuts.pionP.contains(p)) {
+      seeds.push_back(pfo);
+    }
+  }
+  std::ranges::sort(seeds, [](const auto& a, const auto& b) {
+    return edm4hep::utils::magnitude(a.getMomentum()) > edm4hep::utils::magnitude(b.getMomentum());
+  });
+  return seeds;
 }
 } // namespace tautool::reco
